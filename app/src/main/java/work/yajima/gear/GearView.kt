@@ -7,7 +7,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 
@@ -30,8 +29,6 @@ class GearView(context: Context, attributeSet: AttributeSet): View(context, attr
     }
 
     private fun newGear(radius: Float, height: Float, num: Int): Path {
-        val sin : (Double) -> Float = { deg -> Math.sin(deg).toFloat() }
-        val cos : (Double) -> Float = { deg -> Math.cos(deg).toFloat() }
         return Path().apply {
             val fl = Math.PI * 2 / num
             val hl = fl / 2
@@ -69,7 +66,8 @@ class GearView(context: Context, attributeSet: AttributeSet): View(context, attr
 
             canvas.save()
             canvas.translate(ctrl.origin.x, ctrl.origin.y)
-            canvas.rotate(outDegree.takeUnless { gearing }?: (time/2 + ctrl.degree()))
+            outDegree = outDegree.takeUnless { gearing }?: (time/2 + ctrl.degree())
+            canvas.rotate(outDegree)
             canvas.drawPath(outGearPath, ctrlPaint)
             canvas.restore()
         }
@@ -88,5 +86,13 @@ class GearView(context: Context, attributeSet: AttributeSet): View(context, attr
         }
 
         return true
+    }
+
+    private fun sin(degree: Double): Float {
+        return Math.sin(degree).toFloat()
+    }
+
+    private fun cos(degree: Double): Float {
+        return Math.cos(degree).toFloat()
     }
 }
