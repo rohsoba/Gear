@@ -6,29 +6,30 @@ class FloatingController(val min: Float, val max: Float) {
 
     var capturing = false
     val origin: PointF = PointF()
+    val beyond: PointF = PointF()
     val shift: PointF = PointF()
+        get() = field.takeIf { capturing }?: field.apply { set(0f, 0f) }
 
     fun capture(x: Float, y: Float) {
         origin.set(x, y)
+        beyond.set(origin)
         shift.set(0f, 0f)
         capturing = true
     }
 
     fun tilt(x: Float, y: Float) {
-        val vx = origin.x - x
-        val vy = origin.y - y
-        val volume = Math.sqrt((vx*vx + vy*vy).toDouble()).toFloat()
+        shift.set(x - origin.x, y - origin.y)
+        val volume = shift.length()
         when (volume) {
             minOf(volume, min) -> shift.set(0f, 0f)
-            maxOf(volume, max) -> shift.set(vx / volume * max, vy / volume * max)
-            else -> shift.set(vx, vy)
+            maxOf(volume, max) -> shift.set(shift.x / volume * max, shift.y / volume * max)
         }
+        beyond.set(origin.x + shift.x, origin.y + shift.y)
     }
 
     fun release() {
         if (capturing) {
             capturing = false
-            shift.set(0f, 0f)
         }
     }
 
