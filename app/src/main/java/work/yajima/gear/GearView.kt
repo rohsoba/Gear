@@ -24,7 +24,7 @@ class GearView(context: Context, attributeSet: AttributeSet): View(context, attr
             gears.forEach {
                 it.draw(canvas)
             }
-            if (ctrl.shift.length() > ctrl.max * 0.9) {
+            if (root.isNear(gears[1])) {
                 root.addHarmonic(gears[1])
             } else {
                 root.removeHarmonic(gears[1])

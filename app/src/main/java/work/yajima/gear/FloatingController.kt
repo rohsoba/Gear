@@ -40,4 +40,5 @@ class FloatingController(val min: Float, val max: Float) {
     fun volume(): Float {
         return Math.sqrt((shift.x*shift.x + shift.y*shift.y).toDouble()).toFloat()
     }
+
 }

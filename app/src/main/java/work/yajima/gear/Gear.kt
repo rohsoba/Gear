@@ -5,10 +5,21 @@ import android.graphics.*
 class Gear(
         var position: PointF,
         val size: Float,
-        private val numOfTeeth: Long,
-        private val thick: Float,
+        private val numOfTeeth: Int,
+        val thick: Float,
         var angle: Float
 ) {
+    private val circularPitch = Math.PI * 2 / numOfTeeth
+    private val circularThickness = circularPitch / 2
+    private val harmonicWear = circularThickness / 8
+    private val inOutRadius = arrayOf(size, size + thick)
+    private val angles: Array<Array<Double>> = Array(numOfTeeth, init = {
+        arrayOf(circularPitch * it + circularThickness - harmonicWear,
+                circularPitch * it + circularThickness + harmonicWear,
+                circularPitch * it + circularPitch - harmonicWear,
+                circularPitch * it + circularPitch + harmonicWear)
+    })
+
     private val harmonicList = mutableListOf<Gear>()
     fun addHarmonic(gear: Gear) {
         harmonicList.takeIf { !it.contains(gear) }?.add(gear)
@@ -18,21 +29,14 @@ class Gear(
     }
 
     private val path = Path().apply {
-        val fullLength = Math.PI * 2 / numOfTeeth
-        val halfLength = fullLength / 2
-        val harmonicWear = halfLength / 8
-        val radiuses = arrayOf(size, size + thick)
-        moveTo(0f, radiuses[0])
+
+        moveTo(0f, inOutRadius[0])
         (0 until numOfTeeth).forEach {
-            val angles = arrayOf(
-                    fullLength * it + halfLength - harmonicWear,
-                    fullLength * it + halfLength + harmonicWear,
-                    fullLength * it + fullLength - harmonicWear,
-                    fullLength * it + fullLength + harmonicWear)
-            lineTo(sin(angles[0]) * radiuses[0], cos(angles[0]) * radiuses[0])
-            lineTo(sin(angles[1]) * radiuses[1], cos(angles[1]) * radiuses[1])
-            lineTo(sin(angles[2]) * radiuses[1], cos(angles[2]) * radiuses[1])
-            lineTo(sin(angles[3]) * radiuses[0], cos(angles[3]) * radiuses[0])
+            val current = angles[it]
+            lineTo(sin(current[0]) * inOutRadius[0], cos(current[0]) * inOutRadius[0])
+            lineTo(sin(current[1]) * inOutRadius[1], cos(current[1]) * inOutRadius[1])
+            lineTo(sin(current[2]) * inOutRadius[1], cos(current[2]) * inOutRadius[1])
+            lineTo(sin(current[3]) * inOutRadius[0], cos(current[3]) * inOutRadius[0])
         }
         if (thick < 0) {
             addCircle(0f, 0f, size - thick, Path.Direction.CW)
@@ -69,5 +73,11 @@ class Gear(
 
     private fun cos(degree: Double): Float {
         return Math.cos(degree).toFloat()
+    }
+
+    fun isNear(gear: Gear): Boolean {
+        val x = position.x - gear.position.x
+        val y = position.y - gear.position.y
+        return Math.sqrt((x*x + y*y).toDouble()) < thick
     }
 }
