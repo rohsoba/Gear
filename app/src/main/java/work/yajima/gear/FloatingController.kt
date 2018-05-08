@@ -12,7 +12,7 @@ class FloatingController(val min: Float, val max: Float) {
 
     fun capture(x: Float, y: Float) {
         origin.set(x, y)
-        beyond.set(origin)
+        beyond.set(x, y)
         shift.set(0f, 0f)
         capturing = true
     }
@@ -24,7 +24,7 @@ class FloatingController(val min: Float, val max: Float) {
             minOf(volume, min) -> shift.set(0f, 0f)
             maxOf(volume, max) -> shift.set(shift.x / volume * max, shift.y / volume * max)
         }
-        beyond.set(origin.x + shift.x, origin.y + shift.y)
+        beyond.apply { set(origin) } += shift
     }
 
     fun release() {
@@ -36,9 +36,9 @@ class FloatingController(val min: Float, val max: Float) {
     fun degree(): Float {
         return (Math.atan2(shift.y.toDouble(), shift.x.toDouble()) / Math.PI * 180).toFloat()
     }
-
-    fun volume(): Float {
-        return Math.sqrt((shift.x*shift.x + shift.y*shift.y).toDouble()).toFloat()
-    }
-
 }
+
+private operator fun PointF.plusAssign(shift: PointF) {
+    set(x + shift.x, y + shift.y)
+}
+
